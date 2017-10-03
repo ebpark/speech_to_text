@@ -234,12 +234,9 @@
 	}
 
 	// trigger the transcription
-	// The transcription will only run for 15 seconds, then automatically shut off
-	// Change the feature by removing the function setTimeout
 	function startButton(event) {
 		final_transcript = initial_transcript;
 		recognition.start();
-		setTimeout(this.stopButton, 15000);
 		$(".start_button").css('background','#ff0000');
 		$(".stop_button").css('background','#000000');
 		$(".timed_record_button").css('background','#000000');
