@@ -22,11 +22,22 @@
 			color: gray;
 		}
 
-		#start_button {
+		.start_button {
 			display: block;
 			border: none;
 			color: white;
 			background: black;
+			padding: 5px 20px;
+			font-size: 20px;
+			line-height: 30px;
+			margin: 20px auto;
+		}
+
+		.stop_button {
+			display: block;
+			border: none;
+			color: white;
+			background: red;
 			padding: 5px 20px;
 			font-size: 20px;
 			line-height: 30px;
@@ -60,7 +71,8 @@
 	</style>
 </head>
 <body>
-<button id="start_button" onclick="startButton(event)">Record</button>
+<button class="start_button" onclick="startButton(event)">Record</button>
+<button class="stop_button" onclick="stopButton(event)">Stop Record</button>
 
 <div id="left-col">
 	Enter:<br />
@@ -184,18 +196,28 @@
   	// }
 	
 	recognition.onerror = function(event) { }
+
+	// Since if the app does not receive any message for a certain time
+	// the Web recognition will send a "no message" error and turn off the recognition kit
+	// This way is a work around, by re-starting the recognition everytime it ends, except
+	// for when explicitly hit the "Stop Record" button
+	recognition.onend = function() {
+		if (!ignore_onend) {
+			recognition.start();
+		}
+	}
 	
 	// recognition.onend = function() {
 	// 	recognizing = false;
- //    	if (ignore_onend) {
- //      		// stop transcribing
- //  			recognition.stop()
- //            recognizing = false
+    // 	if (ignore_onend) {
+    //   		// stop transcribing
+  	// 		recognition.stop()
+    //         recognizing = false
 			
 	// 		// start transcribing
- //            recognition.start()
- //            recognizing = true
- //    	}
+    //         recognition.start()
+    //         recognizing = true
+    // 	}
 	// }
 
 
@@ -212,13 +234,28 @@
 	}
 
 	// trigger the transcription
+	// The transcription will only run for 15 seconds, then automatically shut off
+	// Change the feature by removing the function setTimeout
 	function startButton(event) {
 		final_transcript = initial_transcript;
 		recognition.start();
-  		
+		setTimeout(this.stopButton, 15000);
+		$(".start_button").css('background','#ff0000');
+		$(".stop_button").css('background','#000000');
+		$(".timed_record_button").css('background','#000000');
+
   		// comparing text
   		// check_transcript = 'loading';
   		// setInterval(check, 20000);
+	}
+
+	// stop the transcription
+	function stopButton(event) {
+		ignore_onend = true;
+		recognition.stop();
+		$(".stop_button").css('background','#ff0000');
+		$(".start_button").css('background','#000000');
+		$(".timed_record_button").css('background','#000000');
 	}
 
 </script>
