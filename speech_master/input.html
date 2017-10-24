@@ -98,7 +98,7 @@
 <div id="keywords-count">
 	Keywords Count:<br />
 	<span id="keywords" class="final">
-		
+
 	</span>
 </div>
 
@@ -269,21 +269,29 @@
     inputText = document.getElementById("disp");
     var innerHTML = inputText.innerHTML;
     var index = innerHTML.indexOf(text);
-		var reg = new RegExp(text, "g");
+		var reg = new RegExp(" " + text + " ", "g");
 			if ( index >= 0 )
 	    {
-	        inputText.innerHTML = innerHTML.replace(reg,"<span class='highlighted'>" + text + "</span>");
+	        inputText.innerHTML = innerHTML.replace(reg,"<span class='highlighted'>" + " " + text + " " + "</span>");
 	    }
 		}
 
 		function unhighlight() {
-			inputText = document.getElementById("disp");
-	    var innerHTML = inputText.innerHTML;
-			var highlightList = inputText.getElementsByClassName("highlighted");
-			highlightList = [].slice.call(highlightList, 0)
-			for (var index = 0; index < highlightList.length; ++index) {
-				highlightList[index].className = "nothighlighted";
-			}
+			// inputText = document.getElementById("disp");
+	    // var innerHTML = inputText.innerHTML;
+			// var highlightList = inputText.getElementsByClassName("highlighted");
+			// highlightList = [].slice.call(highlightList, 0)
+			// for (var index = 0; index < highlightList.length; ++index) {
+			// 	highlightList[index].className = "nothighlighted";
+			// }
+			database.ref('session_1').on('value', function(snapshot) {
+				initial_transcript = snapshot.val()+' ';
+				$('#disp').html(snapshot.val())
+				//$('#enter').html(snapshot.val())
+				if( $('#enter').val() == 'loading') {
+					$('#enter').html(snapshot.val())
+				}
+			});
 		}
 
 		function startHighlight() {
