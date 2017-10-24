@@ -294,14 +294,18 @@
 				}
 			});
 		}
+		var keywords = ['hello', 'now'];
 
 		function startHighlight() {
-			highlight('hello');
-			highlight('now');
+			for (i = 0; i< keywords.length; i++) {
+				highlight(keywords[i]);
+			}
 		}
 
 		function countKeyWords() {
-			document.getElementById('keywords').innerHTML += countKeyWord('hello') + "<br />" + countKeyWord('now') + "<br />";
+			for (i = 0; i< keywords.length; i++) {
+				document.getElementById('keywords').innerHTML += keywords[i] + ": "+ countKeyWord(keywords[i]) + "<br />";
+			}
 		}
 
 		function countKeyWord(text) {
