@@ -153,6 +153,7 @@
 	    recognizing = true;
 		ignore_onend = false;
 		startHighlight();
+		countKeyWords();
 	}
 
 	//
@@ -186,6 +187,7 @@
 	    interim_enter.innerHTML = linebreak(interim_transcript);
 	    database.ref('session_1_interim').set($('#interim_enter').val());
 			startHighlight();
+			countKeyWords();
   	}
 
   	// check to see if transcript is updated
@@ -253,7 +255,6 @@
 		recognition.start();
 		$(".start_button").css('background','#ff0000');
 		$(".stop_button").css('background','#000000');
-		countKeyWords();
 	}
 
 	// stop the transcription
@@ -270,10 +271,10 @@
     inputText = document.getElementById("disp");
     var innerHTML = inputText.innerHTML;
     var index = innerHTML.indexOf(text);
-		var reg = new RegExp(" " + text + " ", "g");
+		var reg = new RegExp(text+"(?= )", "g");
 			if ( index >= 0 )
 	    {
-	        inputText.innerHTML = innerHTML.replace(reg,"<span class='highlighted'>" + " " + text + " " + "</span>");
+	        inputText.innerHTML = innerHTML.replace(reg,"<span class='highlighted'>"+text+ "</span>");
 	    }
 		}
 
@@ -294,30 +295,30 @@
 				}
 			});
 		}
-		var keywords = ['hello', 'now'];
+		var keywords = ['now','hello', 'mirror'];
 
 		function startHighlight() {
 			for (i = 0; i< keywords.length; i++) {
-				highlight(keywords[i]);
+				highlight(" "+keywords[i]);
 			}
 		}
 
 		function countKeyWords() {
+			document.getElementById('keywords').innerHTML = "";
 			for (i = 0; i< keywords.length; i++) {
-				document.getElementById('keywords').innerHTML += keywords[i] + ": "+ countKeyWord(keywords[i]) + "<br />";
+				document.getElementById('keywords').innerHTML += keywords[i] + ": "+ countKeyWord(" "+keywords[i]) + "<br />";
 			}
 		}
 
 		function countKeyWord(text) {
 			inputText = document.getElementById("disp");
 			var innerHTML = inputText.innerHTML;
-	    var index = innerHTML.indexOf(text);
-			var reg = new RegExp(" " + text +" ", "g");
-			if ( index >= 0 )
-	    {
+	    	var index = innerHTML.indexOf(text);
+			var reg = new RegExp(text, "g");
+			if ( index >= 0 ) {
 					var count = (innerHTML.match(reg) || []).length;
 					return count;
-	    }
+	    	}
 		}
 
 
