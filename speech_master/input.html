@@ -98,7 +98,6 @@
 <div id="keywords-count">
 	Keywords Count:<br />
 	<span id="keywords" class="final">
-
 	</span>
 </div>
 
@@ -254,6 +253,7 @@
 		recognition.start();
 		$(".start_button").css('background','#ff0000');
 		$(".stop_button").css('background','#000000');
+		countKeyWords();
 	}
 
 	// stop the transcription
@@ -263,6 +263,7 @@
 		$(".stop_button").css('background','#ff0000');
 		$(".start_button").css('background','#000000');
 		unhighlight();
+		document.getElementById('keywords').innerHTML = "";
 	}
 
 	function highlight(text) {
@@ -300,14 +301,14 @@
 		}
 
 		function countKeyWords() {
-			return countKeyWord('hello');
+			document.getElementById('keywords').innerHTML += countKeyWord('hello') + "<br />" + countKeyWord('now') + "<br />";
 		}
 
 		function countKeyWord(text) {
 			inputText = document.getElementById("disp");
 			var innerHTML = inputText.innerHTML;
 	    var index = innerHTML.indexOf(text);
-			var reg = new RegExp(text, "g");
+			var reg = new RegExp(" " + text +" ", "g");
 			if ( index >= 0 )
 	    {
 					var count = (innerHTML.match(reg) || []).length;
