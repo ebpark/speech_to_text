@@ -164,7 +164,7 @@
 
 		for (var i = event.resultIndex; i < event.results.length; ++i) {
 			if (event.results[i].isFinal) {
-	        	final_transcript += event.results[i][0].transcript;
+	        	final_transcript += event.results[i][0].transcript + " ";
 	        	//check_transcript += event.results[i][0].transcript;
 
 				// if (i == 0){
@@ -174,7 +174,7 @@
 			 //    }
 			    console.log(i);
 	      	} else {
-	        	interim_transcript += event.results[i][0].transcript;
+	        	interim_transcript += event.results[i][0].transcript +" ";
 	      	}
 	    }
 	    final_transcript = capitalize(final_transcript);
@@ -271,55 +271,47 @@
     inputText = document.getElementById("disp");
     var innerHTML = inputText.innerHTML;
     var index = innerHTML.indexOf(text);
-		var reg = new RegExp(text+"(?= )", "g");
-			if ( index >= 0 )
-	    {
-	        inputText.innerHTML = innerHTML.replace(reg,"<span class='highlighted'>"+text+ "</span>");
-	    }
-		}
+	var reg = new RegExp(text + "(?![a-zA-z0-9])", "g");
+		if ( index >= 0 ) {
+    			inputText.innerHTML = innerHTML.replace(reg,"<span class='highlighted'>"+text+ "</span>");
+    	}
+	}
 
-		function unhighlight() {
-			// inputText = document.getElementById("disp");
-	    // var innerHTML = inputText.innerHTML;
-			// var highlightList = inputText.getElementsByClassName("highlighted");
-			// highlightList = [].slice.call(highlightList, 0)
-			// for (var index = 0; index < highlightList.length; ++index) {
-			// 	highlightList[index].className = "nothighlighted";
-			// }
-			database.ref('session_1').on('value', function(snapshot) {
-				initial_transcript = snapshot.val()+' ';
-				$('#disp').html(snapshot.val())
-				//$('#enter').html(snapshot.val())
-				if( $('#enter').val() == 'loading') {
-					$('#enter').html(snapshot.val())
-				}
-			});
-		}
-		var keywords = ['now','hello', 'mirror'];
-
-		function startHighlight() {
-			for (i = 0; i< keywords.length; i++) {
-				highlight(" "+keywords[i]);
+	function unhighlight() {
+		database.ref('session_1').on('value', function(snapshot) {
+			initial_transcript = snapshot.val()+' ';
+			$('#disp').html(snapshot.val())
+			//$('#enter').html(snapshot.val())
+			if( $('#enter').val() == 'loading') {
+				$('#enter').html(snapshot.val())
 			}
-		}
+		});
+	}
+	var keywords = ['hello', 'now', 'end', 'mirror'];
 
-		function countKeyWords() {
-			document.getElementById('keywords').innerHTML = "";
-			for (i = 0; i< keywords.length; i++) {
-				document.getElementById('keywords').innerHTML += keywords[i] + ": "+ countKeyWord(" "+keywords[i]) + "<br />";
-			}
+	function startHighlight() {
+		for (i = 0; i< keywords.length; i++) {
+			highlight(" "+keywords[i]);
 		}
+	}
 
-		function countKeyWord(text) {
-			inputText = document.getElementById("disp");
-			var innerHTML = inputText.innerHTML;
-	    	var index = innerHTML.indexOf(text);
-			var reg = new RegExp(text, "g");
-			if ( index >= 0 ) {
-					var count = (innerHTML.match(reg) || []).length;
-					return count;
-	    	}
+	function countKeyWords() {
+		document.getElementById('keywords').innerHTML = "";
+		for (i = 0; i< keywords.length; i++) {
+			document.getElementById('keywords').innerHTML += keywords[i] + ": "+ countKeyWord(" "+keywords[i]) + "<br />";
 		}
+	}
+
+	function countKeyWord(text) {
+		inputText = document.getElementById("disp");
+		var innerHTML = inputText.innerHTML;
+    	var index = innerHTML.indexOf(text);
+		var reg = new RegExp(text + "(?![a-zA-z0-9])", "g");
+		if ( index >= 0 ) {
+				var count = (innerHTML.match(reg) || []).length;
+				return count;
+    	}
+	}
 
 
 </script>
