@@ -44,14 +44,50 @@
 			margin: 20px auto;
 		}
 
-		.highlighted { background:yellow }
-		.nothighlighted { background: white}
+		.highlighted { 
+			background: yellow 	
+		}
+
+		.falling {
+		    display: -moz-inline-stack;
+		    display: inline-block;
+		    *dislay: inline;
+		    zoom: 1;
+		    vertical-align: top;
+		    
+		    -webkit-animation-name:fall_change_color;
+		    -webkit-animation-duration:10s;
+		    -webkit-animation-timing-function:ease-in;
+		    -webkit-animation-delay:0.5s;
+		    -webkit-animation-play-state:active;
+		    -webkit-animation-iteration-count:infinite;
+		}
+
+		@-webkit-keyframes fall_change_color {
+		    from {
+		        margin-top:0px;
+		    }
+		    to {
+		        margin-top:20px;
+		    }
+		    0%   {background: yellow;}
+	        25%  {background: red;}
+	        50%  {background: blue;}
+	        75%  {background: green;}
+	        100% {background: yellow;}
+		}
 
 		#right-col, #left-col {
 			width: 50%;
 		    box-sizing: border-box;
 		    padding: 30px;
+		}
 
+		#keywords-count {
+			width: 20%;
+			height: 5%;
+			box-sizing: border-box;
+			padding: 30px;
 		}
 
 		#left-col {
@@ -62,8 +98,10 @@
 			float: right;
 		}
 
-		#keywords-count {
-			float: left;
+		#keywords-count:hover {
+			-webkit-transform: rotateZ(-10deg);
+        	-ms-transform: rotateZ(-10deg);
+        	transform: rotateZ(-10deg);
 		}
 
 		#enter, #interim_enter {
@@ -152,7 +190,6 @@
 	recognition.onstart = function() {
 	    recognizing = true;
 		ignore_onend = false;
-		startHighlight();
 		countKeyWords();
 	}
 
@@ -186,8 +223,7 @@
 		// update temp transcript
 	    interim_enter.innerHTML = linebreak(interim_transcript);
 	    database.ref('session_1_interim').set($('#interim_enter').val());
-			startHighlight();
-			countKeyWords();
+	    countKeyWords();
   	}
 
   	// check to see if transcript is updated
@@ -267,13 +303,17 @@
 		document.getElementById('keywords').innerHTML = "";
 	}
 
-	function highlight(text) {
+	function highlight(text, sum) {
     inputText = document.getElementById("disp");
     var innerHTML = inputText.innerHTML;
     var index = innerHTML.indexOf(text);
 	var reg = new RegExp(text + "(?![a-zA-z0-9])", "g");
 		if ( index >= 0 ) {
+			if (sum%5 == 0) {
+				inputText.innerHTML = innerHTML.replace(reg,"<span class='falling'>"+text+ "</span>");
+			} else {
     			inputText.innerHTML = innerHTML.replace(reg,"<span class='highlighted'>"+text+ "</span>");
+    		}
     	}
 	}
 
@@ -289,17 +329,21 @@
 	}
 	var keywords = ['hello', 'now', 'end', 'mirror'];
 
-	function startHighlight() {
+	function startHighlight(sum) {
 		for (i = 0; i< keywords.length; i++) {
-			highlight(" "+keywords[i]);
+			highlight(" "+keywords[i], sum);
 		}
 	}
 
 	function countKeyWords() {
 		document.getElementById('keywords').innerHTML = "";
+		var sum = 0;
 		for (i = 0; i< keywords.length; i++) {
-			document.getElementById('keywords').innerHTML += keywords[i] + ": "+ countKeyWord(" "+keywords[i]) + "<br />";
+			var count = countKeyWord(" " + keywords[i]);
+			sum += count;
+			document.getElementById('keywords').innerHTML += keywords[i] + ": "+ count + "<br />";
 		}
+		startHighlight(sum);
 	}
 
 	function countKeyWord(text) {
@@ -312,6 +356,8 @@
 				return count;
     	}
 	}
+
+
 
 
 </script>
