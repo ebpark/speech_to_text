@@ -44,8 +44,8 @@
 			margin: 20px auto;
 		}
 
-		.highlighted { 
-			background: yellow 	
+		.highlighted {
+			background: yellow
 		}
 
 		.falling {
@@ -54,11 +54,11 @@
 		    *dislay: inline;
 		    zoom: 1;
 		    vertical-align: top;
-		    
+
 		    -webkit-animation-name:fall_change_color;
 		    -webkit-animation-duration:10s;
 		    -webkit-animation-timing-function:ease-in;
-		    -webkit-animation-delay:0.5s;
+		    -webkit-animation-delay:1s;
 		    -webkit-animation-play-state:active;
 		    -webkit-animation-iteration-count:infinite;
 		}
@@ -70,10 +70,10 @@
 		    to {
 		        margin-top:20px;
 		    }
-		    0%   {background: yellow;}
-	        25%  {background: red;}
-	        50%  {background: blue;}
-	        75%  {background: green;}
+		    	0%   {background: yellow;}
+	        25%  {background: red; color: white}
+	        50%  {background: blue; color: white}
+	        75%  {background: green; color: white}
 	        100% {background: yellow;}
 		}
 
@@ -96,6 +96,13 @@
 
 		#right-col {
 			float: right;
+		}
+
+		#poem-box {
+			width: 20%;
+			height: 5%;
+			box-sizing: border-box;
+			padding: 30px;
 		}
 
 		#keywords-count:hover {
@@ -136,6 +143,12 @@
 <div id="keywords-count">
 	Keywords Count:<br />
 	<span id="keywords" class="final">
+	</span>
+</div>
+
+<div id="poem-box">
+	Try to guess the Poem:<br />
+	<span id="poem" class="final">
 	</span>
 </div>
 
@@ -344,6 +357,7 @@
 			document.getElementById('keywords').innerHTML += keywords[i] + ": "+ count + "<br />";
 		}
 		startHighlight(sum);
+		recognizePoem();
 	}
 
 	function countKeyWord(text) {
@@ -357,6 +371,50 @@
     	}
 	}
 
+	// Poem Guessing game
+	var poem = [['mortals)'],
+							['climbi'],
+							['ng', 'i'],
+						 	['nto', 'eachness', 'begi'],
+							['n'],
+							['dizzily'],
+							['swingthings'],
+							['of', 'speeds', 'of'],
+							['trapeze', 'gush', 'somersaults'],
+							['open', 'ing'],
+							['hes', 'shes']]
+
+	function recognizePoem() {
+		inputText = document.getElementById("disp");
+    var innerHTML = inputText.innerHTML;
+		var poemToPrint = []
+		for (i = 0; i < poem.length; i++) {
+			var lineToPrint = [];
+			for (j = 0; j < poem[i].length; j++) {
+				var index = innerHTML.indexOf(poem[i][j]);
+				if (index >= 0) {
+					lineToPrint.push(poem[i][j]);
+				}
+			}
+			poemToPrint.push(lineToPrint);
+		}
+		printPoem(poemToPrint);
+	}
+
+	function printPoem(poemToPrint) {
+		inputText = document.getElementById('poem');
+		inputText.innerHTML = "";
+		for (i = 0; i < poemToPrint.length; i++) {
+			for (j = 0; j < poemToPrint[i].length; j++) {
+				if (j == poemToPrint[i].length - 1){
+					inputText.innerHTML+= poemToPrint[i][j];
+				} else {
+					inputText.innerHTML+= poemToPrint[i][j] + ' ';
+				}
+			}
+			inputText.innerHTML+= "<br />";
+		}
+	}
 
 
 
