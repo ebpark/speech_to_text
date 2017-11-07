@@ -77,6 +77,27 @@
 	        100% {background: yellow;}
 		}
 
+		.fadeIn {
+            -webkit-animation-name: fadeIn;
+            -webkit-animation-delay: 4s;
+  			-webkit-animation-duration: 9s;
+  			-webkit-animation-iteration-count:infinite;
+        }
+
+		@-webkit-keyframes fadeIn {
+            0% {
+			opacity: 0;
+			}
+
+			45% {
+			opacity: 1;
+			}
+
+			100% {
+			opacity: 0%;
+			}
+        }
+
 		#right-col, #left-col {
 			width: 50%;
 		    box-sizing: border-box;
@@ -140,15 +161,15 @@
 	</span>
 </div>
 
-<div id="keywords-count">
-	Keywords Count:<br />
-	<span id="keywords" class="final">
-	</span>
-</div>
-
 <div id="poem-box">
 	Try to guess the Poem:<br />
 	<span id="poem" class="final">
+	</span>
+</div>
+
+<div id="keywords-count">
+	Keywords Count:<br />
+	<span id="keywords" class="final">
 	</span>
 </div>
 
@@ -314,6 +335,7 @@
 		$(".start_button").css('background','#000000');
 		unhighlight();
 		document.getElementById('keywords').innerHTML = "";
+		document.getElementById('poem').innerHTML = "";
 	}
 
 	function highlight(text, sum) {
@@ -354,7 +376,7 @@
 		for (i = 0; i< keywords.length; i++) {
 			var count = countKeyWord(" " + keywords[i]);
 			sum += count;
-			document.getElementById('keywords').innerHTML += keywords[i] + ": "+ count + "<br />";
+			// document.getElementById('keywords').innerHTML += keywords[i] + ": "+ count + "<br />";
 		}
 		startHighlight(sum);
 		recognizePoem();
@@ -373,27 +395,33 @@
 
 	// Poem Guessing game
 	var poem = [['mortals)'],
+							[' '],
 							['climbi'],
-							['ng', 'i'],
-						 	['nto', 'eachness', 'begi'],
-							['n'],
+							['     ','ng', 'i'],
+						 	['     ','nto', 'eachness', 'begi'],
+							['     ','n'],
 							['dizzily'],
-							['swingthings'],
+							['       ','swingthings'],
 							['of', 'speeds', 'of'],
 							['trapeze', 'gush', 'somersaults'],
 							['open', 'ing'],
-							['hes', 'shes']]
+							['        ','hes', 'shes']]
 
 	function recognizePoem() {
 		inputText = document.getElementById("disp");
-    var innerHTML = inputText.innerHTML;
+        var innerHTML = inputText.innerHTML;
 		var poemToPrint = []
 		for (i = 0; i < poem.length; i++) {
 			var lineToPrint = [];
 			for (j = 0; j < poem[i].length; j++) {
+				str = poem[i][j];
 				var index = innerHTML.indexOf(poem[i][j]);
-				if (index >= 0) {
+				if (!str.trim().length) {
 					lineToPrint.push(poem[i][j]);
+				} else {
+					if (index >= 0) {
+						lineToPrint.push(poem[i][j]);
+					}
 				}
 			}
 			poemToPrint.push(lineToPrint);
@@ -402,19 +430,34 @@
 	}
 
 	function printPoem(poemToPrint) {
+		document.getElementById('poem').innerHTML = "";
 		inputText = document.getElementById('poem');
-		inputText.innerHTML = "";
 		for (i = 0; i < poemToPrint.length; i++) {
 			for (j = 0; j < poemToPrint[i].length; j++) {
-				if (j == poemToPrint[i].length - 1){
-					inputText.innerHTML+= poemToPrint[i][j];
+				if (!poemToPrint[i][j].trim().length) {
+					for (k = 0; k < poemToPrint[i][j].length*2; k++) {
+						inputText.innerHTML+= "&nbsp";
+					}
 				} else {
-					inputText.innerHTML+= poemToPrint[i][j] + ' ';
+
+				if (j == poemToPrint[i].length - 1){
+					inputText.innerHTML+= "<span class='fadeIn'>" + poemToPrint[i][j];
+				} else {
+					inputText.innerHTML+= "<span class='fadeIn'>" + poemToPrint[i][j] + ' '+ "</span>";
 				}
+			}
 			}
 			inputText.innerHTML+= "<br />";
 		}
 	}
+
+	function wait(ms){
+   var start = new Date().getTime();
+   var end = start;
+   while(end < start + ms) {
+     end = new Date().getTime();
+  }
+}
 
 
 
