@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <title> D3 Sample</title>
+    <meta charset='utf-8'>
+    <style>
+        .axis path,
+        .axis line {
+        fill: none;
+            stroke: black;
+            shape-rendering: crispEdges;
+        }
+        .axis text {
+            font-family: sans-serif;
+            font-size: 11px;
+        }
+
+        #start_button {
+			display: block;
+			border: none;
+			color: white;
+			background: black;
+			padding: 5px 20;
+			font-size: 20px;
+			line-height: 30px;
+			margin: 20px auto;
+		}
+    </style>        
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    
+  </head>
+  <body>
+        <input type="button" id="start_button" value="Start" />
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/3.2.0/firebase.js"></script>
+    <script>
+// Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyB--tihtbFHV93UANT0zBZOV0T_W2MWoKw",
+        authDomain: "human-learning-session-1.firebaseapp.com",
+        databaseURL: "https://human-learning-session-1.firebaseio.com",
+        storageBucket: "",
+    };
+	firebase.initializeApp(config);
+	var database = firebase.database();
+
+	$('#enter').keyup(function(){
+		console.log($(this).val())
+		database.ref('session_1').set($(this).val());
+	})
+
+
+	database.ref('session_1').on('value', function(snapshot) {
+		initial_transcript = snapshot.val()+' ';
+		$('#disp').html(snapshot.val())
+		//$('#enter').html(snapshot.val())
+		if( $('#enter').val() == 'loading') {
+			$('#enter').html(snapshot.val())
+		}
+
+	});
+
+	database.ref('session_1_interim').on('value', function(snapshot) {
+		$('#interim_enter').html(snapshot.val())
+		$('#interim').html(snapshot.val())
+
+	});
+
+	//Speech Transcription
+
+	//
+	var check_transcript = '';
+	// var doublecheck_transcript = '';
+
+	var recognition = new webkitSpeechRecognition();
+	recognition.continuous = true;
+	recognition.interimResults = true;
+
+
+	// initiated text recognition
+	recognition.onstart = function() {
+	    recognizing = true;
+		ignore_onend = false;
+	}
+
+	//
+
+	recognition.onresult = function(event) {
+		var interim_transcript = '';
+
+
+		for (var i = event.resultIndex; i < event.results.length; ++i) {
+			if (event.results[i].isFinal) {
+	        	final_transcript += event.results[i][0].transcript + " ";
+	        	//check_transcript += event.results[i][0].transcript;
+
+				// if (i == 0){
+			 //    	doublecheck_transcript = check_transcript;
+			 //    	console.log(i);
+			 //    	console.log('check: ' + check_transcript + ' and double check: ' + doublecheck_transcript);
+			 //    }
+			    console.log(i);
+	      	} else {
+	        	interim_transcript += event.results[i][0].transcript +" ";
+	      	}
+	    }
+	    final_transcript = capitalize(final_transcript);
+        database.ref('session_1').set(linebreak(final_transcript));
+        recognizeContinent(linebreak(final_transcript));
+	    // update final transcript
+        
+		// update temp transcript
+    }
+
+  	// check to see if transcript is updated
+
+  	// function check(){
+  	// 	if (check_transcript == doublecheck_transcript) {
+  	// 		console.log('same');
+			// // stop transcribing
+  	// 		recognition.stop()
+   //          recognizing = false
+
+			// // start transcribing
+   //          recognition.start()
+   //          recognizing = true
+
+  	// 	} else {
+  	// 		console.log('different');
+	  //   	console.log('check: ' + check_transcript);
+	  //   	console.log('double check: ' + doublecheck_transcript);
+  	// 	}
+
+  	// }
+
+	recognition.onerror = function(event) { }
+
+	// Since if the app does not receive any message for a certain time
+	// the Web recognition will send a "no message" error and turn off the recognition kit
+	// This way is a work around, by re-starting the recognition everytime it ends, except
+	// for when explicitly hit the "Stop Record" button
+	recognition.onend = function() {
+		if (!ignore_onend) {
+			recognition.start();
+		}
+	}
+
+	// recognition.onend = function() {
+	// 	recognizing = false;
+    // 	if (ignore_onend) {
+    //   		// stop transcribing
+  	// 		recognition.stop()
+    //         recognizing = false
+
+	// 		// start transcribing
+    //         recognition.start()
+    //         recognizing = true
+    // 	}
+	// }
+
+
+	// formatting the text
+	var two_line = /\n\n/g;
+	var one_line = /\n/g;
+	function linebreak(s) {
+	  return s.replace(two_line, '<p></p>').replace(one_line, '<br>');
+	}
+
+	var first_char = /\S/;
+	function capitalize(s) {
+	  return s.replace(first_char, function(m) { return m.toUpperCase(); });
+	}
+
+    var button = document.getElementById('start_button');
+    button.addEventListener("click", startButton)
+	// trigger the transcription
+	function startButton() {
+        console.log("Started");
+		final_transcript = initial_transcript;
+		recognition.start();
+		$("#start_button").css('background','#ff0000');
+		button.removeEventListener("click", startButton);
+        button.addEventListener("click", stopButton);
+        button.value = "Stop";
+	}
+
+	// stop the transcription
+	function stopButton() {
+        console.log("Stopped");
+		ignore_onend = true;
+		recognition.stop();
+		$("#start_button").css('background','#000000');
+		button.removeEventListener("click", stopButton);
+        button.addEventListener("click", startButton);
+        button.value = "Start";
+	}
+
+    var continent = ['Asia', 'Europe', 'Africa', 'America'];
+    var previousIndex = -1;
+    var previousContinent = '';
+    function recognizeContinent(text) {
+        // database.ref('session_1').on('value', function(snapshot) {
+		    // initial_transcript = snapshot.val()+' ';
+            var continentToOutput =  0;
+            var previous = -1;
+            for (i = 0; i < continent.length; i++) {
+                var index = text.lastIndexOf(continent[i]);
+                if (index >= 0) {
+                    if (index > previous) {
+                        console.log(previous);
+                        continentToOutput = i;
+                        previous = index;
+                    }
+                }
+            }
+            if (continentToOutput != previousIndex) {
+                visualize(continent[continentToOutput]);
+                previousContinent = continent[continentToOutput];
+                previousIndex = continentToOutput;
+            }
+    }
+
+    var body = d3.select('body');
+ 
+    
+    function visualize(continent) {
+        console.log(continent);
+        d3.select('body').select("svg").selectAll('circle')
+            .attr('r',10)
+            .attr('stroke-width',3)
+            .transition()
+            .duration(1000)
+            .attr("r", 0)
+            .remove()
+        d3.select("svg").remove();
+        d3.csv(continent + '.csv', function (data) {
+            // Variables
+            // var body = d3.select('body');
+            var margin = { top: 50, right: 50, bottom: 50, left: 100 }
+            var h = 500 - margin.top - margin.bottom
+            var w = 1000 - margin.left - margin.right
+            var formatPercent = d3.format('')
+            // Scales
+            var colorScale = d3.scale.category20()
+            var xScale = d3.scale.linear()
+                .domain([
+                    d3.min([0,d3.min(data,function (d) { return d.gdp/1000 })]),
+                    d3.max([0,d3.max(data,function (d) { return d.gdp/1000 })])
+                    ])
+                .range([0,w])
+            var yScale = d3.scale.linear()
+                .domain([
+                    d3.min([0,d3.min(data,function (d) { return d.whi })]),
+                    d3.max([0,d3.max(data,function (d) { return d.whi })])
+                    ])
+                .range([h,0])
+            //SVG
+            var svg = body.append('svg')
+                .attr('height',h + margin.top + margin.bottom)
+                .attr('width',w + margin.left + margin.right)
+            .append('g')
+                .attr('transform','translate(' + margin.left + ',' + margin.top + ')')
+            // X-axis
+            var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .tickFormat(formatPercent)
+            .ticks(5)
+            .orient('bottom')
+            // Y-axis
+            var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .tickFormat(formatPercent)
+            .ticks(5)
+            .orient('left')
+            // Circles
+            var circles = svg.selectAll('circle')
+                .data(data)
+            circles.enter()
+                .append('circle')
+                .attr('cx',function (d) { return xScale(d.gdp/1000) })
+                .attr('cy',function (d) { return yScale(d.whi) })
+                .attr('r','1')
+                .attr('fill',function (d,i) { return colorScale(i) })
+                .transition()
+                .duration(1000)
+                .attr('r',10)
+           
+
+        // X-axis
+        svg.append('g')
+            .attr('class','axis')
+            .attr('transform', 'translate(0,' + h + ')')
+            .call(xAxis)
+            .append('text') // X-axis Label
+            .attr('class','label')
+            .attr('y',-10)
+            .attr('x',w)
+            .attr('dy','.71em')
+            .style('text-anchor','end')
+            .text('GDP Per Capita (thousands)')
+        // Y-axis
+        svg.append('g')
+            .attr('class', 'axis')
+            .call(yAxis)
+            .append('text') // y-axis Label
+            .attr('class','label')
+            .attr('transform','rotate(-90)')
+            .attr('x',0)
+            .attr('y',5)
+            .attr('dy','.71em')
+            .style('text-anchor','end')
+            .text('World Happiness Index')        
+        })
+    }
+    </script>
+  </body>
+</html>
