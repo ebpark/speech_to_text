@@ -53,7 +53,6 @@
 	database.ref('session_1').on('value', function(snapshot) {
 		initial_transcript = snapshot.val()+' ';
 		$('#disp').html(snapshot.val())
-		//$('#enter').html(snapshot.val())
 		if( $('#enter').val() == 'loading') {
 			$('#enter').html(snapshot.val())
 		}
@@ -68,7 +67,6 @@
 
 	//Speech Transcription
 
-	//
 	var check_transcript = '';
 	// var doublecheck_transcript = '';
 
@@ -92,13 +90,6 @@
 		for (var i = event.resultIndex; i < event.results.length; ++i) {
 			if (event.results[i].isFinal) {
 	        	final_transcript += event.results[i][0].transcript + " ";
-	        	//check_transcript += event.results[i][0].transcript;
-
-				// if (i == 0){
-			 //    	doublecheck_transcript = check_transcript;
-			 //    	console.log(i);
-			 //    	console.log('check: ' + check_transcript + ' and double check: ' + doublecheck_transcript);
-			 //    }
 			    console.log(i);
 	      	} else {
 	        	interim_transcript += event.results[i][0].transcript +" ";
@@ -106,57 +97,16 @@
 	    }
 	    final_transcript = capitalize(final_transcript);
         database.ref('session_1').set(linebreak(final_transcript));
-        recognizeContinent(linebreak(final_transcript));
-	    // update final transcript
-        
-		// update temp transcript
+        recognizeCountry(linebreak(final_transcript));
     }
-
-  	// check to see if transcript is updated
-
-  	// function check(){
-  	// 	if (check_transcript == doublecheck_transcript) {
-  	// 		console.log('same');
-			// // stop transcribing
-  	// 		recognition.stop()
-   //          recognizing = false
-
-			// // start transcribing
-   //          recognition.start()
-   //          recognizing = true
-
-  	// 	} else {
-  	// 		console.log('different');
-	  //   	console.log('check: ' + check_transcript);
-	  //   	console.log('double check: ' + doublecheck_transcript);
-  	// 	}
-
-  	// }
 
 	recognition.onerror = function(event) { }
 
-	// Since if the app does not receive any message for a certain time
-	// the Web recognition will send a "no message" error and turn off the recognition kit
-	// This way is a work around, by re-starting the recognition everytime it ends, except
-	// for when explicitly hit the "Stop Record" button
 	recognition.onend = function() {
 		if (!ignore_onend) {
 			recognition.start();
 		}
 	}
-
-	// recognition.onend = function() {
-	// 	recognizing = false;
-    // 	if (ignore_onend) {
-    //   		// stop transcribing
-  	// 		recognition.stop()
-    //         recognizing = false
-
-	// 		// start transcribing
-    //         recognition.start()
-    //         recognizing = true
-    // 	}
-	// }
 
 
 	// formatting the text
@@ -195,35 +145,58 @@
         button.value = "Start";
 	}
 
+    var countries = {};
+    $.get('countries.txt', function(data) {
+        var listOfCountries = data.split("\n");
+        for (i = 0; i < listOfCountries.length-1; i++) {
+            var country = listOfCountries[i].split(",");
+            countries[country[0]] = country[1];
+        }
+    }, 'text');
+    countries["Asia"] = "Asia"
+    countries["Europe"] = "Europe"
+    countries["Africa"] = "Africa"
+    countries["America"] = "America"
+
     var continent = ['Asia', 'Europe', 'Africa', 'America'];
-    var previousIndex = -1;
-    var previousContinent = '';
-    function recognizeContinent(text) {
-        // database.ref('session_1').on('value', function(snapshot) {
-		    // initial_transcript = snapshot.val()+' ';
-            var continentToOutput =  0;
-            var previous = -1;
-            for (i = 0; i < continent.length; i++) {
-                var index = text.lastIndexOf(continent[i]);
-                if (index >= 0) {
-                    if (index > previous) {
-                        console.log(previous);
-                        continentToOutput = i;
-                        previous = index;
-                    }
+    var previousCountryIndex = -1;
+    var previousCoutry = '';
+    var previousContinent ='';
+    function recognizeCountry(text) {
+        var countryToOutput =  0;
+        var previous = -1;
+        var keyList = Object.keys(countries);
+        for (i = 0; i < keyList.length; i++) {
+            var index = text.lastIndexOf(keyList[i]);
+            if (index >= 0) {
+                if (index > previous) {
+                    countryToOutput = i;
+                    previous = index;
                 }
             }
-            if (continentToOutput != previousIndex) {
-                visualize(continent[continentToOutput]);
-                previousContinent = continent[continentToOutput];
-                previousIndex = continentToOutput;
+        }
+        if (continent.indexOf(keyList[countryToOutput]) > -1) {
+
+            if (countryToOutput != previousCountryIndex) {
+                visualizeCountry(keyList[countryToOutput],keyList[countryToOutput], previousContinent);
+                previousCoutry = keyList[countryToOutput];
+                previousCountryIndex = countryToOutput;
+                previousContinent = previousCoutry
             }
+        } else {  
+            if (countryToOutput != previousCountryIndex) {
+                visualizeCountry(keyList[countryToOutput], countries[keyList[countryToOutput]], previousContinent);
+                previousCoutry = keyList[countryToOutput];
+                previousCountryIndex = countryToOutput;
+                previousContinent = countries[keyList[countryToOutput]];
+            }
+        }
+
     }
 
     var body = d3.select('body');
 
-    function visualize(continent) {
-        console.log(continent);
+    function visualizeCountry(country, continent, previous) {
         d3.csv(continent + '.csv', function (data) {
             d3.select("svg").remove();
             // Variables
@@ -254,7 +227,11 @@
                 .attr('transform','translate(' + margin.left + ',' + margin.top + ')')
 
             svg.append("text")
-            .text(continent)
+            .text(function (d) {
+                if (country == continent) {
+                    return continent
+                }
+                return country })
             .attr('x', w/2)
             .attr('y', h+40)
             // X-axis
@@ -271,16 +248,32 @@
             .orient('left')
             // Circles
             var circles = svg.selectAll('circle')
-                .data(data)
-            circles.enter()
-                .append('circle')
-                .attr('cx',function (d) { return xScale(d.gdp/1000) })
-                .attr('cy',function (d) { return yScale(d.whi) })
-                .attr('r','1')
-                .attr('fill',function (d,i) { return colorScale(i) })
-                .transition()
-                .duration(2000)
-                .attr('r',10)
+            .data(data)
+                circles.enter()
+            .append('circle')
+            .attr('cx',function (d) { return xScale(d.gdp/1000) })
+            .attr('cy',function (d) { return yScale(d.whi) })
+            .attr('r',function (d) {
+                console.log(continent)
+                console.log(previous)
+
+                if (continent == previous) {
+                    console.log("yes")
+                    return 10
+                } else {
+                    return 1 
+                }})
+            .attr('fill',function (d,i) { 
+                if (country == continent) {
+                    return colorScale(i)
+                }
+                if (d.Country == country) {
+                    return d3.rgb("#ff0000")
+                }
+                return d3.rgb("#a9a9a9") })
+            .transition()
+            .duration(2000)
+            .attr('r',10)
 
         // X-axis
         svg.append('g')

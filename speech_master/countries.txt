@@ -1,0 +1,135 @@
+Afghanistan,Asia
+Albania,Europe
+Algeria,Africa
+Armenia,Asia
+Australia,Asia
+Austria,Europe
+Azerbaijan,Asia
+Bahrain,Asia
+Bangladesh,Asia
+Belarus,Europe
+Belgium,Europe
+Belize,America
+Benin,Africa
+Bhutan,Asia
+Bolivia,America
+Bosnia and Herzegovina,Europe
+Botswana,Africa
+Brazil,America
+Bulgaria,Europe
+Burkina Faso,Africa
+Burundi,Africa
+Cambodia,Asia
+Cameroon,Africa
+Canada,America
+Chad,Africa
+Chile,America
+China,Asia
+Colombia,America
+Congo,Africa
+Costa Rica,America
+Cote d'Ivoire,Africa
+Croatia,Europe
+Cyprus,Europe
+Czech Republic,Europe
+Democratic Republic of Congo,Africa
+Denmark,Europe
+Dominican Republic,America
+Ecuador,America
+Egypt,Africa
+El Salvador,America
+Estonia,Europe
+Ethiopia,Africa
+Finland,Europe
+France,Europe
+Gabon,Africa
+Georgia,Europe
+Germany,Europe
+Ghana,Africa
+Greece,Europe
+Guatemala,America
+Guinea,Africa
+Haiti,America
+Honduras,America
+Hong Kong,Asia
+Hungary,Europe
+India,Asia
+Indonesia,Asia
+Iran,Asia
+Iraq,Asia
+Ireland,Europe
+Israel,Asia
+Italy,Europe
+Jamaica,America
+Japan,Asia
+Jordan,Asia
+Kazakhstan,Asia
+Kenya,Africa
+Kosovo,Europe
+Kuwait,Asia
+Kyrgyzstan,Asia
+Latvia,Europe
+Lebanon,Asia
+Liberia,Africa
+Lithuania,Europe
+Luxembourg,Europe
+Macedonia,Europe
+Madagascar,Africa
+Malawi,Africa
+Malaysia,Asia
+Mali,Africa
+Mauritania,Africa
+Mauritius,Africa
+Mexico,America
+Mongolia,Asia
+Montenegro,Europe
+Nepal,Asia
+Netherlands,Europe
+New Zealand,Asia
+Nicaragua,America
+Niger,Africa
+Norway,Europe
+Pakistan,Asia
+Palestine,Asia
+Panama,America
+Paraguay,America
+Peru,America
+Philippines,Asia
+Poland,Europe
+Portugal,Europe
+Romania,Europe
+Russia,Europe
+Rwanda,Africa
+Saudi Arabia,Asia
+Senegal,Africa
+Serbia,Europe
+Sierra Leone,Africa
+Singapore,Asia
+Slovakia,Europe
+Slovenia,Europe
+South Africa,Africa
+South Korea,Asia
+South Sudan,Africa
+Spain,Europe
+Sri Lanka,Asia
+Sudan,Africa
+Sweden,Europe
+Switzerland,Europe
+Tajikistan,Asia
+Tanzania,Africa
+Thailand,Asia
+Togo,Africa
+Tunisia,Africa
+Turkey,Asia
+Turkmenistan,Asia
+Uganda,Africa
+Ukraine,Europe
+United Arab Emirates,Asia
+United Kingdom,Europe
+United States,America
+Uruguay,America
+Uzbekistan,Asia
+Venezuela,America
+Vietnam,Asia
+Zambia,Africa
+Zimbabwe,Africa
