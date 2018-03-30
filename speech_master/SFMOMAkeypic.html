@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <title> Museum Keyword Recognition</title>
+    <meta charset='utf-8'>
+    <style>
+
+    .container {
+    }
+
+    #topleft {
+        position: absolute;
+        top: 8px;
+        left: 16px;
+        font-size: 18px;
+        visibility: hidden;
+    }
+
+    #bottomleft {
+        position: absolute;
+        bottom: 8px;
+        left: 16px;
+        font-size: 18px;
+        visibility: hidden;
+    }
+
+    #center {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        left: 50%;
+        text-align: center;
+        font-size: 18px;
+    }
+
+    #topright {
+        position: absolute;
+        top: 8px;
+        right: 16px;
+        font-size: 18px;
+        visibility: hidden;
+    }
+
+    #bottomright {
+        position: absolute;
+        bottom: 8px;
+        right: 16px;
+        font-size: 18px;
+        visibility: hidden ;
+    }
+
+    
+    #start_button {
+			display: block;
+			border: none;
+			color: white;
+			background: black;
+			padding: 5px 20;
+			font-size: 20px;
+			line-height: 30px;
+			margin: 20px auto;
+		}
+    </style>        
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    
+  </head>
+  <body>
+        <input type="button" id="start_button" value="Start" />
+        
+        <div class="container">
+                <div id="topleft">Top Left</div>                
+                <div id="topright">Top Right</div>
+                <div id="bottomright">Bottom Right</div>
+                <div id="bottomleft">Bottom Left</div> 
+                <div id="center">Time</div>
+               
+                
+        </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/3.2.0/firebase.js"></script>
+    <script>
+// Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyB--tihtbFHV93UANT0zBZOV0T_W2MWoKw",
+        authDomain: "human-learning-session-1.firebaseapp.com",
+        databaseURL: "https://human-learning-session-1.firebaseio.com",
+        storageBucket: "",
+    };
+	firebase.initializeApp(config);
+	var database = firebase.database();
+
+	$('#enter').keyup(function(){
+		console.log($(this).val())
+		database.ref('session_1').set($(this).val());
+	})
+
+
+	database.ref('session_1').on('value', function(snapshot) {
+		initial_transcript = snapshot.val()+' ';
+		$('#disp').html(snapshot.val())
+		if( $('#enter').val() == 'loading') {
+			$('#enter').html(snapshot.val())
+		}
+
+	});
+
+	database.ref('session_1_interim').on('value', function(snapshot) {
+		$('#interim_enter').html(snapshot.val())
+		$('#interim').html(snapshot.val())
+
+	});
+
+	//Speech Transcription
+
+	var check_transcript = '';
+	// var doublecheck_transcript = '';
+
+	var recognition = new webkitSpeechRecognition();
+	recognition.continuous = true;
+	recognition.interimResults = true;
+
+
+	// initiated text recognition
+	recognition.onstart = function() {
+	    recognizing = true;
+		ignore_onend = false;
+	}
+
+	//
+
+
+
+	recognition.onresult = function(event) {
+		var interim_transcript = '';
+
+        var go = false;
+		for (var i = event.resultIndex; i < event.results.length; ++i) {
+			if (event.results[i].isFinal) {
+	        	final_transcript += event.results[i][0].transcript + " ";
+			    console.log(i);
+                go = true;
+	      	} else {
+	        	interim_transcript += event.results[i][0].transcript +" ";
+	      	}
+	    }
+        if (go) {
+            final_transcript = capitalize(final_transcript);
+            database.ref('session_1').set(linebreak(final_transcript));
+            recognizeTime(linebreak(final_transcript));
+        }
+    }
+
+	recognition.onerror = function(event) { }
+
+	recognition.onend = function() {
+		if (!ignore_onend) {
+			recognition.start();
+		}
+	}
+
+    var button = document.getElementById('start_button');
+    button.addEventListener("click", startButton)
+
+	function startButton() {
+        console.log("Started");
+		final_transcript = initial_transcript;
+		recognition.start();
+		$("#start_button").css('background','#ff0000');
+		button.removeEventListener("click", startButton);
+        button.addEventListener("click", stopButton);
+        button.value = "Stop";
+	}
+
+	// stop the transcription
+	function stopButton() {
+        console.log("Stopped");
+		ignore_onend = true;
+		recognition.stop();
+		$("#start_button").css('background','#000000');
+		button.removeEventListener("click", stopButton);
+        button.addEventListener("click", startButton);
+        button.value = "Start";
+	}
+
+	// formatting the text
+	var two_line = /\n\n/g;
+	var one_line = /\n/g;
+	function linebreak(s) {
+	  return s.replace(two_line, '<p></p>').replace(one_line, '<br>');
+	}
+
+	var first_char = /\S/;
+	function capitalize(s) {
+	  return s.replace(first_char, function(m) { return m.toUpperCase(); });
+	}
+
+
+
+    var keyWords = {};
+    $.get('timeDB.txt', function(data) {
+        var listOfItems = data.split("\n");
+        for (i = 0; i < listOfItems.length-1; i++) {
+            var artworkInfo = listOfItems[i].split("$");
+            var lstOfKeys = artworkInfo[0].split("*");
+            if (lstOfKeys.length == 1) {
+                if (artworkInfo[0] in keyWords) {
+                    var temp = keyWords[artworkInfo[0]];
+                    temp.push(artworkInfo.slice(1));
+                    keyWords[artworkInfo[0]] = temp;
+                } else {
+                    var value = [];
+                    value.push(artworkInfo.slice(1));
+                    keyWords[artworkInfo[0]] = value;
+                }
+            } else {
+                for (j = 0; j < lstOfKeys.length; j ++) {
+                    if (lstOfKeys[j] in keyWords) {
+                        var temp = keyWords[lstOfKeys[j]];
+                        temp.push(artworkInfo.slice(1));
+                        keyWords[artworkInfo[0]] = temp;
+                    } else {
+                        var value = [];
+                        value.push(artworkInfo.slice(1));
+                        keyWords[lstOfKeys[j]] = value;
+                    }
+                }
+            }
+        }
+    }, 'text');
+    
+    var increment = 0;
+    function recognizeTime(text) {
+        var space = text.split(" ");
+        console.log("Called"+increment);
+        increment++;
+        if ((space[space.length-2] == "time") || (space[space.length-2] == "Time")) {
+            var keyList = Object.keys(keyWords);
+            var randomKey = [];
+            for (i = 0; i < 4; i ++) {
+                randomKey.push(Math.floor(Math.random() * (keyList.length-1 - 0 + 1)) + 0)
+            }
+            document.getElementById('topleft').innerHTML =keyList[randomKey[0]];
+            document.getElementById('topleft').style.visibility="visible";
+
+            document.getElementById('topright').innerHTML =keyList[randomKey[1]];
+            document.getElementById('topright').style.visibility="visible";
+
+            document.getElementById('bottomleft').innerHTML =keyList[randomKey[2]];
+            document.getElementById('bottomleft').style.visibility="visible";
+
+            document.getElementById('bottomright').innerHTML =keyList[randomKey[3]];
+            document.getElementById('bottomright').style.visibility="visible";
+        }
+    }
+
+    </script>
+  </body>
+</html>
