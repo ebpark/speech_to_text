@@ -10,17 +10,17 @@
 
     #topleft {
         position: absolute;
-        top: 8px;
-        left: 16px;
-        font-size: 18px;
+        top: 32px;
+        left: 64px;
+        font-size: 40px;
         visibility: hidden;
     }
 
     #bottomleft {
         position: absolute;
-        bottom: 8px;
-        left: 16px;
-        font-size: 18px;
+        bottom: 32px;
+        left: 64px;
+        font-size: 40px;
         visibility: hidden;
     }
 
@@ -28,24 +28,24 @@
         position: absolute;
         left: 0;
         top: 50%;
-        left: 50%;
+        left: 47%;
         text-align: center;
-        font-size: 18px;
+        font-size: 40px;
     }
 
     #topright {
         position: absolute;
-        top: 8px;
-        right: 16px;
-        font-size: 18px;
+        top: 32px;
+        right: 64px;
+        font-size: 40px;
         visibility: hidden;
     }
 
     #bottomright {
         position: absolute;
-        bottom: 8px;
-        right: 16px;
-        font-size: 18px;
+        bottom: 32px;
+        right: 64px;
+        font-size: 40px;
         visibility: hidden ;
     }
 
@@ -228,13 +228,33 @@
         }
     }, 'text');
     
+    var run = true;
     var increment = 0;
     function recognizeTime(text) {
         var space = text.split(" ");
         console.log("Called"+increment);
         increment++;
         if ((space[space.length-2] == "time") || (space[space.length-2] == "Time")) {
-            var keyList = Object.keys(keyWords);
+            console.log('hit');
+            displayRandomKey();
+            var counter = 0;
+            (function theLoop () {
+                setTimeout(function () {
+                    displayRandomKey();
+                    counter++;
+                    if (counter == 100) {
+                        run = false;
+                    }
+                    if (run) {          
+                        theLoop();
+                    }
+                }, 4000);
+            })(10);
+        }
+    }
+
+    function displayRandomKey() {
+        var keyList = Object.keys(keyWords);
             var randomKey = [];
             for (i = 0; i < 4; i ++) {
                 randomKey.push(Math.floor(Math.random() * (keyList.length-1 - 0 + 1)) + 0)
@@ -250,7 +270,6 @@
 
             document.getElementById('bottomright').innerHTML =keyList[randomKey[3]];
             document.getElementById('bottomright').style.visibility="visible";
-        }
     }
 
     </script>
