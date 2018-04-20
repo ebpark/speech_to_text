@@ -37,7 +37,7 @@
         position: absolute;
         left: 0;
         top: 20%;
-        left: 25%;
+        left: 22.5%;
         text-align: center;
         font-size: 40px;
     }
@@ -269,104 +269,28 @@
             // Check the four conners
             var topleft = document.getElementById('topleft').innerHTML;
             if ((space[space.length-2] == topleft.toLowerCase()) || (space[space.length-2] == topleft)) {
-                console.log(topleft)
-
-                document.getElementById('topleft').style.color="Blue"
-                document.getElementById('center').style.color="Blue"
-                document.getElementById('center').innerHTML=topleft
-                keywordPresent = true
-                
-                var elem = document.createElement("img");
-                var value = keyWords[topleft][0];
-
-                setTimeout(function () {
-
-                    elem.src = value[value.length-1]
-                    elem.setAttribute("height", "400");
-                    elem.setAttribute("width", "600");
-                    document.getElementById("picture").appendChild(elem);
-                }, 500);
+                keywordPresent = displayImage('topleft',topleft);
             }
 
             var topright = document.getElementById('topright').innerHTML;
             if ((space[space.length-2] == topright.toLowerCase()) || (space[space.length-2] == topright)) {
-                console.log(topright)
-
-                document.getElementById('topright').style.color="Blue"
-                document.getElementById('center').style.color="Blue"
-                document.getElementById('center').innerHTML=topright
-                keywordPresent = true
-                
-                var elem = document.createElement("img");
-                var value = keyWords[topright][0];
-
-                setTimeout(function () {
-
-                    elem.src = value[value.length-1]
-                    elem.setAttribute("height", "400");
-                    elem.setAttribute("width", "600");
-                    document.getElementById("picture").appendChild(elem);
-                }, 500);
+                keywordPresent = displayImage('topright',topright);
             }
 
             var bottomleft = document.getElementById('bottomleft').innerHTML;
             if ((space[space.length-2] == bottomleft.toLowerCase()) || (space[space.length-2] == bottomleft)) {
-                console.log(topleft)
-
-                document.getElementById('bottomleft').style.color="Blue"
-                document.getElementById('center').style.color="Blue"
-                document.getElementById('center').innerHTML=bottomleft
-                keywordPresent = true
-
-                var elem = document.createElement("img");
-                var value = keyWords[bottomleft][0];
-
-                setTimeout(function () {
-
-                    elem.src = value[value.length-1]
-                    elem.setAttribute("height", "400");
-                    elem.setAttribute("width", "600");
-                    document.getElementById("picture").appendChild(elem);
-                }, 500);
+                keywordPresent = displayImage('bottomleft',bottomleft);                
             }
 
             var bottomright = document.getElementById('bottomright').innerHTML;
             if ((space[space.length-2] == bottomright.toLowerCase()) || (space[space.length-2] == bottomright)) {
-                console.log(bottomright)
-
-                document.getElementById('bottomright').style.color="Blue"
-                document.getElementById('center').style.color="Blue"
-                document.getElementById('center').innerHTML=bottomright
-                keywordPresent = true
-
-                var elem = document.createElement("img");
-                var value = keyWords[bottomright][0];
-
-                setTimeout(function () {
-
-                    elem.src = value[value.length-1]
-                    elem.setAttribute("height", "400");
-                    elem.setAttribute("width", "600");
-                    document.getElementById("picture").appendChild(elem);
-                }, 500);
+                keywordPresent = displayImage('bottomright',bottomright);                
             }
 
             var keyList = Object.keys(keyWords);
             for (i = 0; i < keyList.length; i++) {
                 if ((space[space.length-2] == keyList[i].toLowerCase()) || (space[space.length-2] == keyList[i])) {
-                    document.getElementById('center').innerHTML = keyList[i];
-                    document.getElementById('center').style.color="Blue"
-                    keywordPresent = true;
-                    var elem = document.createElement("img");
-                    var value = keyWords[keyList[i]][0];
-
-                    setTimeout(function () {
-
-                        elem.src = value[value.length-1]
-                        elem.setAttribute("height", "400");
-                        elem.setAttribute("width", "600");
-                        document.getElementById("picture").appendChild(elem);
-                    }, 500);
+                    keywordPresent = displayImage('center',keyList[i]);                    
 
                 }
             }
@@ -378,8 +302,25 @@
         }
     }
 
-    function recognizeKey(text) {
+    function displayImage(pos,val) {
+        console.log(val)
+
+        document.getElementById(pos).style.color="Blue"
+        document.getElementById('center').style.color="Blue"
+        document.getElementById('center').innerHTML=val
+        keywordPresent = true
         
+        var elem = document.createElement("img");
+        var value = keyWords[val][0];
+
+        setTimeout(function () {
+
+            elem.src = value[value.length-1]
+            elem.setAttribute("height", "400");
+            elem.setAttribute("width", "600");
+            document.getElementById("picture").appendChild(elem);
+        }, 500);
+        return keywordPresent
     }
 
     function displayRandomKey() {
