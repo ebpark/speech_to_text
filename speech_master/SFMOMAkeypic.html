@@ -31,8 +31,18 @@
         left: 47%;
         text-align: center;
         font-size: 40px;
+        visibility: hidden;
     }
-
+    #instruction {
+        position: absolute;
+        left: 0;
+        top: 15%;
+        left: 50%;
+        text-align: center;
+        font-size: 25px;
+        visibility: hidden;
+        margin-left: -80px;
+    }
     #picture {
         position: absolute;
         width: 600px;
@@ -112,6 +122,24 @@
 }
     }
 
+    @-webkit-keyframes fadeIn {
+        0% { opacity: 0; filter:alpha(opacity=100);        visibility: visible;
+ }
+        50% { opacity: 0.5; filter:alpha(opacity=50);        visibility: visible;
+ }
+        100% { opacity: 1; filter:alpha(opacity=0);         visibility: visible;
+}
+    }
+
+    @-webkit-keyframes fadeOut {
+        0% { opacity: 1; filter:alpha(opacity=0);        visibility: visible;
+ }
+        50% { opacity: 0.5; filter:alpha(opacity=50);        visibility: visible;
+ }
+        100% { opacity: 0; filter:alpha(opacity=100);         visibility: visible;
+}
+    }
+
     @keyframes fade {
         0% { opacity: 0; filter:alpha(opacity=100);        visibility: visible;
  }
@@ -126,7 +154,7 @@
     
   </head>
   <body>
-        <input type="button" id="start_button" value="Start" />
+        <!-- <input type="button" id="start_button" value="Start" /> -->
         
         <div class="container">
                 <div id="topleft">Top Left</div>                
@@ -139,10 +167,11 @@
                 <div id="infoDate"></div>
                 <div id="infoArtist"></div>
                 <div id="infoNation"></div>
+                <div onclick='stopButton()' id = "instruction">Start by saying:</div>
                 
                 
         </div>
-        <div id="dialog" title="Basic dialog">
+        <div id="dialog" title="">
             <p>Hello, hit start.</p>
           </div>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
@@ -230,20 +259,38 @@
 	}
 
     $( function() {
-        $( "#dialog" ).dialog();
-    } );
+        $( "#dialog" ).dialog({buttons: { "Start": function() { 
+                $(this).dialog("close"); 
+                startButton();
+                document.getElementById('center').style.visibility="visible";
+                document.getElementById('center').style.color="Black"
 
-    var button = document.getElementById('start_button');
-    button.addEventListener("click", startButton)
+                document.getElementById('center').style.webkitAnimation = 'fadeIn';
+                document.getElementById('center').style.webkitAnimationDuration = '3s';
+                document.getElementById('center').style.webkitAnimationIterationCount = '1';
+
+                document.getElementById('instruction').style.visibility="visible";
+                document.getElementById('instruction').style.color="Black";
+                }
+            } 
+        });
+    });
+
+    $("#dialog").dialog({
+   open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); }
+});
+
+    // var button = document.getElementById('start_button');
+    // button.addEventListener("click", startButton)
 
 	function startButton() {
         console.log("Started");
 		final_transcript = initial_transcript;
 		recognition.start();
-		$("#start_button").css('background','#ff0000');
-		button.removeEventListener("click", startButton);
-        button.addEventListener("click", stopButton);
-        button.value = "Stop";
+		// $("#start_button").css('background','#ff0000');
+		// button.removeEventListener("click", startButton);
+        // button.addEventListener("click", stopButton);
+        // button.value = "Stop";
 	}
 
 	// stop the transcription
@@ -251,10 +298,13 @@
         console.log("Stopped");
 		ignore_onend = true;
 		recognition.stop();
-		$("#start_button").css('background','#000000');
-		button.removeEventListener("click", stopButton);
-        button.addEventListener("click", startButton);
-        button.value = "Start";
+        setTimeout(function() {
+            startButton();
+        }, 2000)
+		// $("#start_button").css('background','#000000');
+		// button.removeEventListener("click", stopButton);
+        // button.addEventListener("click", startButton);
+        // button.value = "Start";
 	}
 
 	// formatting the text
@@ -302,7 +352,7 @@
             }
         }
     }, 'text');
-
+    show = false;
     var afterTime = ["Capsule",
             "Curved",
             "Delay",
@@ -363,6 +413,11 @@
         var space = text.split(" ");
         increment++;
         if ((space[space.length-2] == "time") || (space[space.length-2] == "Time")) {
+            $('#instruction').fadeOut(1000)
+            setTimeout(function () {
+                document.getElementById('instruction').innerText = 'Click here to restore';
+                $('#instruction').fadeIn(8000)
+            },1000)
             run = true;
             displayRandomKey();
             var counter = 0;
@@ -415,6 +470,8 @@
 
             if (!keywordPresent) {
                 document.getElementById('center').innerText = space[space.length-2];
+                document.getElementById('instruction').innerText = 'Sorry, try again!';
+                $('#instruction').fadeIn(500)
                 document.getElementById('center').style.color="Red"
                 document.getElementById('topleft').style.webkitAnimation = '';
                 document.getElementById('topleft').style.webkitAnimationDuration = '';
@@ -433,11 +490,19 @@
     }
 
     function displayImage(pos,val) {
+        $('#instruction').fadeOut(500)
+
+        var myNode = document.getElementById("picture");
+
+        while (myNode.firstChild) {
+            myNode.removeChild(myNode.firstChild);
+        }
         console.log(val)
 
         document.getElementById(pos).style.color="Blue"
         document.getElementById('center').style.color="Blue"
         document.getElementById('center').innerText=val
+
         keywordPresent = true
         
         var value = keyWords[val];
@@ -449,19 +514,24 @@
             if (afterTime.indexOf(String(val)) > -1) {
                 document.getElementById('topleft').innerText="Time"
                 document.getElementById('topleft').style.color="Blue"
+
                 document.getElementById('topleft').style.webkitAnimation = '';
                 document.getElementById('topleft').style.webkitAnimationDuration = '';
                 document.getElementById('topleft').style.webkitAnimationIterationCount = '';
 
+
                 document.getElementById('bottomright').innerText=val
                 document.getElementById('bottomright').style.color="Blue"
+
                 document.getElementById('bottomright').style.webkitAnimation = '';
                 document.getElementById('bottomright').style.webkitAnimationDuration = '';
-                document.getElementById('bottomright').style.webkitAnimationIterationCount = '';
+                document.getElementById('bottomright').style.webkitAnimationIterationCount = '1';
+
 
             } else if (beforeTime.indexOf(String(val)) > -1) {
                 document.getElementById('topleft').innerText=val
                 document.getElementById('topleft').style.color="Blue"
+
                 document.getElementById('topleft').style.webkitAnimation = '';
                 document.getElementById('topleft').style.webkitAnimationDuration = '';
                 document.getElementById('topleft').style.webkitAnimationIterationCount = '';
@@ -469,10 +539,10 @@
 
                 document.getElementById('bottomright').innerText="Time"
                 document.getElementById('bottomright').style.color="Blue"
+
                 document.getElementById('bottomright').style.webkitAnimation = '';
                 document.getElementById('bottomright').style.webkitAnimationDuration = '';
                 document.getElementById('bottomright').style.webkitAnimationIterationCount = '';
-
             }
             for (i = 0; i < value.length; i++) {
                 var elem = document.createElement("img");
@@ -486,17 +556,21 @@
                 elem.setAttribute("height", "400");
                 elem.setAttribute("width", "600");
                 document.getElementById("picture").appendChild(elem);
+                $('#picture').hide().fadeIn(1000);
             }
         }, 500);
+        show = true;
+        setTimeout(function () {
+            if (show) {
+                document.getElementById('instruction').innerText = "Say 'Time' again to go back";
+                $('#instruction').fadeIn(500)
+            }
+            }, 5000)
         return keywordPresent
     }
 
     function refreshAllPos() {
-        document.getElementById('center').innerText=""
-        document.getElementById('topleft').innerText=""
-        document.getElementById('topright').innerText=""
-        document.getElementById('bottomleft').innerText=""
-        document.getElementById('bottomright').innerText=""
+        console.log(document.getElementById('topleft').style.opacity)
         document.getElementById('topleft').style.webkitAnimation = '';
         document.getElementById('topleft').style.webkitAnimationDuration = '';
         document.getElementById('topleft').style.webkitAnimationIterationCount = '';
@@ -509,14 +583,18 @@
         document.getElementById('bottomright').style.webkitAnimation = '';
         document.getElementById('bottomright').style.webkitAnimationDuration = '';
         document.getElementById('bottomright').style.webkitAnimationIterationCount = '';
+
+        document.getElementById('topleft').innerText=""
+        document.getElementById('topright').innerText=""
+        document.getElementById('center').innerText=""
+        document.getElementById('bottomright').innerText=""
+        document.getElementById('bottomleft').innerText=""
     }
 
     function displayRandomKey() {
-        var myNode = document.getElementById("picture");
-
-        while (myNode.firstChild) {
-            myNode.removeChild(myNode.firstChild);
-        }
+        show = false
+        $('#picture').fadeOut(1000)
+   
         document.getElementById("infoName").innerText ='';
         document.getElementById("infoDate").innerText = '';
         document.getElementById("infoArtist").innerText = '';
