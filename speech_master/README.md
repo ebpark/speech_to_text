@@ -1,2 +1,0 @@
-# speech
-(human) learning sessions
