@@ -1,0 +1,219 @@
+
+    .container {
+    }
+
+
+    #dummy {
+        width: 400px;
+        height: 400px;
+        background: blue;
+        position: absolute;
+        left: 100px;
+        top: 100px;
+        display: none;
+        z-index: 99;
+    }
+
+    .right {
+        animation: boost 3s forwards;
+    }
+
+    @keyframes boost {
+        0% {left: 100px;}
+        100% {left: 600px;}
+    }
+
+
+
+
+    #topleft {
+        position: fixed;
+        top: 32px;
+        left: 64px;
+        font-size: 40px;
+        visibility: hidden;
+        font-family: Helvetica;
+        color: pink;
+        opacity: 1;
+    }
+
+    #bottomleft {
+        position: fixed;
+        bottom: 32px;
+        left: 64px;
+        font-size: 40px;
+        visibility: hidden;
+    }
+
+    div #center {
+        position: absolute;
+        width: 600px;
+        height: 30px;
+        left: 50%;
+        top: 50%;
+        margin-left: -300px;
+        border-bottom: solid green 1px;
+        line-height: 15px;
+        text-align: center;
+        font-size: 40px;
+        visibility: hidden;
+        color: green;
+    }
+
+
+    div #instruction {
+        position: absolute;
+        top: 15%;
+        left: 50%;
+        text-align: center;
+        font-size: 25px;
+        visibility: hidden;
+        margin-left: -80px;
+        font-family: Helvetica;
+        color: red;
+    }
+    #picture {
+        position: absolute;
+        width: 600px;
+        left: 50%;
+        top: 20%;
+        text-align: center;
+        font-size: 40px;
+        margin-left: -300px;
+        opacity: 0;
+    }
+
+    #infoName {
+        position: absolute;
+        left: 250px;
+        top: 50%;
+        text-align: center;
+        font-size: 20px;
+        opacity: 0;
+    }
+    #infoArtist {
+        position: absolute;
+        left: 250px;
+        top: 55%;
+        text-align: center;
+        font-size: 20px;
+    }
+    #infoDate {
+        position: absolute;
+        left: 250px;
+        top: 60%;
+        text-align: center;
+        font-size: 20px;
+    }
+    #infoNation {
+        position: absolute;
+        left: 250px;
+        top: 65%;
+        text-align: center;
+        font-size: 20px;
+    }
+
+    #topright {
+        position: fixed;
+        top: 32px;
+        right: 64px;
+        font-size: 40px;
+        visibility: hidden;
+    }
+
+    #bottomright {
+        position: fixed;
+        bottom: 32px;
+        right: 64px;
+        font-size: 40px;
+        visibility: hidden ;
+    }
+    
+    #start_button {
+        display: block;
+        border: none;
+        color: white;
+        background: black;
+        padding: 5px 20;
+        font-size: 20px;
+        line-height: 30px;
+        margin: 20px auto;
+    }
+
+    #dialog p {
+        font-family: Helvetica;
+        font-size: 40px;
+        position: absolute;
+        left: -100px;
+        top: -200px;
+        color: white;
+    }
+
+    .ui-button {
+        width: 100px;
+        height: 30px;
+        font-family: Helvetica;
+        font-size: 16px;
+        border: white 1px solid;
+        background: transparent;
+        position: absolute;
+        left: -100px;
+        top: 200px;
+        color: white;
+    }
+
+    body {
+        background: black;
+    }
+
+    .bg_white {
+        animation: towhite 2s forwards;
+    }
+
+    @keyframes towhite {
+        0% {background: black;}
+        100% {background: white;}
+    }
+
+    @keyframes move_tl {
+        0% { opacity: 0; left: 0; }
+        10% { opacity: 1; left: 0; }
+        70% { opacity: 1; left: 0; }
+        100% { opacity: 0; left: 300; }
+    }
+
+    @-webkit-keyframes fade {
+        0% { opacity: 0; filter:alpha(opacity=100);        visibility: visible;
+ }
+        50% { opacity: 1; filter:alpha(opacity=0);        visibility: visible;
+ }
+        100% { opacity: 0; filter:alpha(opacity=100);         visibility: visible;
+}
+    }
+
+    @-webkit-keyframes fadeIn {
+        0% { opacity: 0; filter:alpha(opacity=100);        visibility: visible;
+ }
+        50% { opacity: 0.5; filter:alpha(opacity=50);        visibility: visible;
+ }
+        100% { opacity: 1; filter:alpha(opacity=0);         visibility: visible;
+}
+    }
+
+    @-webkit-keyframes fadeOut {
+        0% { opacity: 1; filter:alpha(opacity=0);        visibility: visible;
+ }
+        50% { opacity: 0.5; filter:alpha(opacity=50);        visibility: visible;
+ }
+        100% { opacity: 0; filter:alpha(opacity=100);         visibility: visible;
+}
+    }
+
+    @keyframes fade {
+        0% { opacity: 0; filter:alpha(opacity=100);        visibility: visible;
+ }
+        50% { opacity: 1; filter:alpha(opacity=0);         visibility: visible;
+}
+        100% { opacity: 0; filter:alpha(opacity=100);         visibility: visible;
+}
+    }
