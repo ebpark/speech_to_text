@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>      
+    <link rel="stylesheet" href="css/style.css" />
+    <title> Museum Keyword Recognition</title>
+
+    
+  </head>
+  <body>        
+
+        <div id="dummy"></div>
+        <div class="container">
+                <div id="topleft">Top Left</div>                
+                <div id="topright">Top Right</div>
+                <div id="bottomright">Bottom Right</div>
+                <div id="bottomleft">Bottom Left</div> 
+                <div id="center">Time</div>
+                <div id="picture"></div>
+                <div id="infoName"></div>
+                <div id="infoDate"></div>
+                <div id="infoArtist"></div>
+                <div id="infoNation"></div>
+                <div onclick='stopButton()' id = "instruction">Start by saying:</div>
+        </div>
+
+        <div id="dialog">
+            <p>Hello, hit start. blah blah blah blah blah blah blah blah blah blah blah blah blah</p>
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/3.2.0/firebase.js"></script>
+        <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+// Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyB--tihtbFHV93UANT0zBZOV0T_W2MWoKw",
+        authDomain: "human-learning-session-1.firebaseapp.com",
+        databaseURL: "https://human-learning-session-1.firebaseio.com",
+        storageBucket: "",
+    };
+	firebase.initializeApp(config);
+	var database = firebase.database();
+
+	$('#enter').keyup(function(){
+		console.log($(this).val())
+		database.ref('session_1').set($(this).val());
+	})
+
+
+	database.ref('session_1').on('value', function(snapshot) {
+		initial_transcript = snapshot.val()+' ';
+		$('#disp').html(snapshot.val())
+		if( $('#enter').val() == 'loading') {
+			$('#enter').html(snapshot.val())
+		}
+
+	});
+
+	database.ref('session_1_interim').on('value', function(snapshot) {
+		$('#interim_enter').html(snapshot.val())
+		$('#interim').html(snapshot.val())
+
+	});
+
+	//Speech Transcription
+
+	var check_transcript = '';
+	// var doublecheck_transcript = '';
+
+	var recognition = new webkitSpeechRecognition();
+	recognition.continuous = true;
+	recognition.interimResults = true;
+
+
+	// initiated text recognition
+	recognition.onstart = function() {
+	    recognizing = true;
+		ignore_onend = false;
+	}
+
+	//
+
+
+
+	recognition.onresult = function(event) {
+		var interim_transcript = '';
+
+        var go = false;
+		for (var i = event.resultIndex; i < event.results.length; ++i) {
+			if (event.results[i].isFinal) {
+	        	final_transcript += event.results[i][0].transcript + " ";
+			    console.log(i);
+                go = true;
+	      	} else {
+	        	interim_transcript += event.results[i][0].transcript +" ";
+	      	}
+	    }
+        if (go) {
+            final_transcript = capitalize(final_transcript);
+            database.ref('session_1').set(linebreak(final_transcript));
+            recognizeTime(linebreak(final_transcript));
+        }
+    }
+
+	recognition.onerror = function(event) { }
+
+	recognition.onend = function() {
+		if (!ignore_onend) {
+			recognition.start();
+		}
+	}
+
+    $( function() {
+        $( "#dialog" ).dialog({
+                width: 800,
+                resizable: false,
+                draggable: false,
+                buttons: { "Start": function() { 
+                $(this).dialog("close"); 
+                startButton();
+                document.getElementById('center').style.visibility="visible";
+
+                $('body').addClass('bg_white'); // move after time is said
+
+                document.getElementById('center').style.webkitAnimation = 'fadeIn';
+                document.getElementById('center').style.webkitAnimationDuration = '3s';
+                document.getElementById('center').style.webkitAnimationIterationCount = '1';
+
+                document.getElementById('instruction').style.visibility="visible";
+                }
+            } 
+        });
+    });
+
+    $("#dialog").dialog({
+   open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); }
+});
+
+    // var button = document.getElementById('start_button');
+    // button.addEventListener("click", startButton)
+
+	function startButton() {
+        console.log("Started");
+		final_transcript = initial_transcript;
+		recognition.start();
+		// $("#start_button").css('background','#ff0000');
+		// button.removeEventListener("click", startButton);
+        // button.addEventListener("click", stopButton);
+        // button.value = "Stop";
+	}
+
+	// stop the transcription
+	function stopButton() {
+        console.log("Stopped");
+		ignore_onend = true;
+		recognition.stop();
+        setTimeout(function() {
+            startButton();
+        }, 2000)
+		// $("#start_button").css('background','#000000');
+		// button.removeEventListener("click", stopButton);
+        // button.addEventListener("click", startButton);
+        // button.value = "Start";
+	}
+
+	// formatting the text
+	var two_line = /\n\n/g;
+	var one_line = /\n/g;
+	function linebreak(s) {
+	  return s.replace(two_line, '<p></p>').replace(one_line, '<br>');
+	}
+
+	var first_char = /\S/;
+	function capitalize(s) {
+	  return s.replace(first_char, function(m) { return m.toUpperCase(); });
+	}
+
+
+
+    var keyWords = {};
+    $.get('timeDB.txt', function(data) {
+        var listOfItems = data.split("\n");
+        for (i = 0; i < listOfItems.length-1; i++) {
+            var artworkInfo = listOfItems[i].split("$");
+            var lstOfKeys = artworkInfo[0].split("*");
+            if (lstOfKeys.length == 1) {
+                if (artworkInfo[0] in keyWords) {
+                    var temp = keyWords[artworkInfo[0]];
+                    temp.push(artworkInfo.slice(1));
+                    keyWords[artworkInfo[0]] = temp;
+                } else {
+                    var value = [];
+                    value.push(artworkInfo.slice(1));
+                    keyWords[artworkInfo[0]] = value;
+                }
+            } else {
+                for (j = 0; j < lstOfKeys.length; j ++) {
+                    if (lstOfKeys[j] in keyWords) {
+                        var temp = keyWords[lstOfKeys[j]];
+                        temp.push(artworkInfo.slice(1));
+                        keyWords[artworkInfo[0]] = temp;
+                    } else {
+                        var value = [];
+                        value.push(artworkInfo.slice(1));
+                        keyWords[lstOfKeys[j]] = value;
+                    }
+                }
+            }
+        }
+    }, 'text');
+    show = false;
+    var afterTime = ["Capsule",
+            "Curved",
+            "Delay",
+            "Blue",
+            "Equals",
+            "Expired",
+            "Inbetween",
+            "Lapse",
+            "Line",
+            "Peace",
+            "Place",
+            "Screen",
+            "Ventures",
+            "Zone"];
+    var beforeTime = ["Day",
+            "One",
+            "Dinner",
+            "Dual",
+            "First",
+            "Frozen",
+            "Haying",
+            "Invented",
+            "Islands",
+            "Long",
+            "Lunch",
+            "Marking",
+            "Now",
+            "Our",
+            "Portrait",
+            "Quality",
+            "Real",
+            "Refusal",
+            "Sculptured",
+            "Sea",
+            "Rocks",
+            "Sections",
+            "Space",
+            "Spirit",
+            "Sonia",
+            "Stopping",
+            "Tea",
+            "Vacation"];
+
+
+    console.log(afterTime)
+    console.log(afterTime[0])
+
+    $.get('beforeTime.txt', function(data) {
+        var beforeTimeKeys = data.split("\n");
+        for (i = 0; i < beforeTimeKeys.length; i++) {
+            beforeTime.push(String(beforeTimeKeys[i]));
+        }
+    })
+
+    var run = true;
+    var increment = 0;
+    function recognizeTime(text) {
+        var space = text.split(" ");
+        increment++;
+        if ((space[space.length-2] == "time") || (space[space.length-2] == "Time")) {
+
+            $("#dummy").fadeOut(); // blue square goes away
+
+            $('#instruction').fadeOut(1000)
+            setTimeout(function () {
+                document.getElementById('instruction').innerText = 'Click here to restore';
+                $('#instruction').fadeIn(8000)
+            },1000)
+            run = true;
+            displayRandomKey();
+            var counter = 0;
+            (function theLoop () {
+                setTimeout(function () {
+                    if (run) {
+                        displayRandomKey();          
+                        theLoop();
+                    }
+                }, 6000);
+            })(10);
+        } else {
+            run = false;
+            var keywordPresent = false;
+
+            // Check the four conners
+            var topleft = document.getElementById('topleft').innerText;
+            if ((space[space.length-2] == topleft.toLowerCase()) || (space[space.length-2] == topleft)) {
+                keywordPresent = displayImage('topleft',topleft);
+            }
+
+            var topright = document.getElementById('topright').innerText;
+            if ((space[space.length-2] == topright.toLowerCase()) || (space[space.length-2] == topright)) {
+                keywordPresent = displayImage('topright',topright);
+            }
+
+            var bottomleft = document.getElementById('bottomleft').innerText;
+            if ((space[space.length-2] == bottomleft.toLowerCase()) || (space[space.length-2] == bottomleft)) {
+                keywordPresent = displayImage('bottomleft',bottomleft);                
+            }
+
+            var bottomright = document.getElementById('bottomright').innerText;
+            if ((space[space.length-2] == bottomright.toLowerCase()) || (space[space.length-2] == bottomright)) {
+                keywordPresent = displayImage('bottomright',bottomright);                
+            }
+
+            if (!keywordPresent) {
+                var keyList = Object.keys(keyWords);
+                for (i = 0; i < keyList.length; i++) {
+                    if ((space[space.length-2] == keyList[i].toLowerCase()) || (space[space.length-2] == keyList[i])) {
+                        keywordPresent = displayImage('center',keyList[i]);                    
+
+                    }
+                }
+            }
+
+            if (!keywordPresent) {
+                document.getElementById('center').innerText = space[space.length-2];
+                document.getElementById('instruction').innerText = 'Sorry, try again!';
+                $('#instruction').fadeIn(500);
+                document.getElementById('center').style.color="Red"
+                document.getElementById('topleft').style.webkitAnimation = '';
+                document.getElementById('topleft').style.webkitAnimationDuration = '';
+                document.getElementById('topleft').style.webkitAnimationIterationCount = '';
+                document.getElementById('topright').style.webkitAnimation = '';
+                document.getElementById('topright').style.webkitAnimationDuration = '';
+                document.getElementById('topright').style.webkitAnimationIterationCount = '';
+                document.getElementById('bottomleft').style.webkitAnimation = '';
+                document.getElementById('bottomleft').style.webkitAnimationDuration = '';
+                document.getElementById('bottomleft').style.webkitAnimationIterationCount = '';
+                document.getElementById('bottomright').style.webkitAnimation = '';
+                document.getElementById('bottomright').style.webkitAnimationDuration = '';
+                document.getElementById('bottomright').style.webkitAnimationIterationCount = '';
+            }
+        }
+    }
+
+    function displayImage(pos,val) {
+
+        // custom keyword animation test start
+
+        if ((val == "first") || (val == "First")) {
+            
+            $("#dummy").fadeIn();
+            $("#dummy").addClass("right");
+
+        }
+
+
+        // custom keyword animation test end
+
+
+        $('#instruction').fadeOut(500)
+
+        var myNode = document.getElementById("picture");
+
+        while (myNode.firstChild) {
+            myNode.removeChild(myNode.firstChild);
+        }
+        console.log(val)
+
+        document.getElementById(pos).style.color="Blue"
+        document.getElementById('center').style.color="Blue"
+        document.getElementById('center').innerText=val
+
+        keywordPresent = true
+        
+        var value = keyWords[val];
+        console.log(value.length)
+        setTimeout(function () {
+            refreshAllPos();
+            // //Check if key word goes before or after time
+
+            if (afterTime.indexOf(String(val)) > -1) {
+                document.getElementById('topleft').innerText="Time"
+                document.getElementById('topleft').style.color="Blue"
+
+                document.getElementById('topleft').style.webkitAnimation = '';
+                document.getElementById('topleft').style.webkitAnimationDuration = '';
+                document.getElementById('topleft').style.webkitAnimationIterationCount = '';
+
+
+                document.getElementById('bottomright').innerText=val
+                document.getElementById('bottomright').style.color="Blue"
+
+                document.getElementById('bottomright').style.webkitAnimation = '';
+                document.getElementById('bottomright').style.webkitAnimationDuration = '';
+                document.getElementById('bottomright').style.webkitAnimationIterationCount = '1';
+
+
+            } else if (beforeTime.indexOf(String(val)) > -1) {
+                document.getElementById('topleft').innerText=val
+                document.getElementById('topleft').style.color="Blue"
+
+                document.getElementById('topleft').style.webkitAnimation = '';
+                document.getElementById('topleft').style.webkitAnimationDuration = '';
+                document.getElementById('topleft').style.webkitAnimationIterationCount = '';
+
+
+                document.getElementById('bottomright').innerText="Time"
+                document.getElementById('bottomright').style.color="Blue"
+
+                document.getElementById('bottomright').style.webkitAnimation = '';
+                document.getElementById('bottomright').style.webkitAnimationDuration = '';
+                document.getElementById('bottomright').style.webkitAnimationIterationCount = '';
+            }
+            for (i = 0; i < value.length; i++) { // artist page appearing ++++
+                var elem = document.createElement("img");
+                $('#infoName').animate({opacity: '1', top: '40%'}, 2000);
+                document.getElementById("infoName").innerText = value[i][0];
+                document.getElementById("infoDate").innerText = value[i][1];
+                document.getElementById("infoArtist").innerText = value[i][2];
+                document.getElementById("infoNation").innerText = value[i][3];
+
+                elem.src = value[i][value[i].length-1];
+                console.log(elem.src);
+                elem.setAttribute("height", "400");
+                elem.setAttribute("width", "600");
+                document.getElementById("picture").appendChild(elem);
+                $('#picture').hide().fadeIn(1000);
+                $('#picture').animate({opacity: '1', top: '10%'}, 2000);
+            }
+        }, 500);
+        show = true;
+        setTimeout(function () {
+            if (show) {
+                document.getElementById('instruction').innerText = "Say 'Time' again to go back";
+                $('#instruction').fadeIn(500)
+            }
+            }, 5000)
+        return keywordPresent
+    }
+
+    function refreshAllPos() {
+        console.log(document.getElementById('topleft').style.opacity)
+        document.getElementById('topleft').style.webkitAnimation = '';
+        document.getElementById('topleft').style.webkitAnimationDuration = '';
+        document.getElementById('topleft').style.webkitAnimationIterationCount = '';
+        document.getElementById('topright').style.webkitAnimation = '';
+        document.getElementById('topright').style.webkitAnimationDuration = '';
+        document.getElementById('topright').style.webkitAnimationIterationCount = '';
+        document.getElementById('bottomleft').style.webkitAnimation = '';
+        document.getElementById('bottomleft').style.webkitAnimationDuration = '';
+        document.getElementById('bottomleft').style.webkitAnimationIterationCount = '';
+        document.getElementById('bottomright').style.webkitAnimation = '';
+        document.getElementById('bottomright').style.webkitAnimationDuration = '';
+        document.getElementById('bottomright').style.webkitAnimationIterationCount = '';
+
+        document.getElementById('topleft').innerText=""
+        document.getElementById('topright').innerText=""
+        document.getElementById('center').innerText=""
+        document.getElementById('bottomright').innerText=""
+        document.getElementById('bottomleft').innerText=""
+    }
+
+    function displayRandomKey() {  // saying time again to go back to main screen +++++
+        show = false
+        $('#picture').fadeOut(1000)
+   
+        document.getElementById("infoName").innerText ='';
+        document.getElementById("infoDate").innerText = '';
+        document.getElementById("infoArtist").innerText = '';
+        document.getElementById("infoNation").innerText = '';
+        var keyList = Object.keys(keyWords);
+            var randomKey = [];
+            var full = false;
+            while (!full) {
+                var index = Math.floor(Math.random() * (keyList.length-1 - 0 + 1)) + 0;
+                if (randomKey.indexOf(index)!=-1) {
+                    continue;
+                }
+                randomKey.push(index);
+                if (randomKey.length >= 4) {
+                    full = true;
+                }
+            }
+
+            document.getElementById('topleft').innerText =keyList[randomKey[0]];
+            document.getElementById('topleft').style.visibility="visible";
+
+            document.getElementById('topleft').style.webkitAnimation = 'move_tl';
+            document.getElementById('topleft').style.webkitAnimationDuration = '6s';
+            document.getElementById('topleft').style.webkitAnimationIterationCount = 'infinite';
+
+            document.getElementById('topright').innerText =keyList[randomKey[1]];
+            document.getElementById('topright').style.visibility="visible";
+
+            document.getElementById('topright').style.webkitAnimation = 'fade';
+            document.getElementById('topright').style.webkitAnimationDuration = '6s';
+            document.getElementById('topright').style.webkitAnimationIterationCount = 'infinite';
+
+            document.getElementById('bottomleft').innerText =keyList[randomKey[2]];
+            document.getElementById('bottomleft').style.visibility="visible";
+
+            document.getElementById('bottomleft').style.webkitAnimation = 'fade';
+            document.getElementById('bottomleft').style.webkitAnimationDuration = '6s';
+            document.getElementById('bottomleft').style.webkitAnimationIterationCount = 'infinite';
+
+            document.getElementById('bottomright').innerText =keyList[randomKey[3]];
+            document.getElementById('bottomright').style.visibility="visible";
+
+            document.getElementById('bottomright').style.webkitAnimation = 'fade';
+            document.getElementById('bottomright').style.webkitAnimationDuration = '6s';
+            document.getElementById('bottomright').style.webkitAnimationIterationCount = 'infinite';
+
+            document.getElementById('center').innerText ="Time";
+
+    }
+
+    </script>
+  </body>
+</html>
